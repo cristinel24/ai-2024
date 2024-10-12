@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 def instances_per_class(df: pd.DataFrame) -> pd.DataFrame:
     return df["Race"].value_counts()
 
-def df_value_frequency(df: pd.DataFrame) -> list[(str, dict)]:
+def df_value_frequency(df: pd.DataFrame) -> list[tuple[str, dict]]:
     return [(attribute, df[attribute].value_counts().to_dict()) for attribute in df.columns]
 
 def plot_value_frequency(df: pd.DataFrame, attribute: str) -> None:
