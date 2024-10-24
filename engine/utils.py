@@ -10,4 +10,6 @@ def transform_non_numeric(df: pd.DataFrame):
     df['Logement'] = LabelEncoder().fit_transform(df['Logement'])
     df['Zone'] = LabelEncoder().fit_transform(df['Zone'])
     df['Nombre'] = LabelEncoder().fit_transform(df['Nombre'])
+    df['Color'] = LabelEncoder().fit_transform(df['Color'])
+    df['Pattern'] = LabelEncoder().fit_transform(df['Pattern'])
 
