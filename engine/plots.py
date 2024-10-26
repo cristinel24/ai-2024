@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 
 
 def df_correlation(df: pd.DataFrame):
+    plt.close()
     columns = df.columns.drop('Horodateur')
     correlation_matrix = df[columns].corr()
 
