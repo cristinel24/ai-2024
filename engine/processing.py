@@ -1,10 +1,23 @@
 import random
 import numpy as np
 import pandas as pd
+from engine.mappings import BREED_TO_COLOR_PATTERN
 
 
 def _read_dataset_to_df(dataset_csv_path: str) -> pd.DataFrame:
     return pd.read_csv(dataset_csv_path).drop(columns=["Row.names", "Plus"])
+
+
+def _impute_missing_values(df: pd.DataFrame) -> pd.DataFrame:
+    for column in df.select_dtypes(include=['float64', 'int64']).columns:
+        median_value = df[column].median()
+        df[column] = df[column].fillna(median_value)
+
+    for column in df.select_dtypes(include=['object']).columns:
+        mode_value = df[column].mode()[0]
+        df[column] = df[column].fillna(mode_value)
+
+    return df
 
 
 def _process_missing_values(df: pd.DataFrame) -> pd.DataFrame:
@@ -15,61 +28,35 @@ def _process_missing_values(df: pd.DataFrame) -> pd.DataFrame:
         return df
 
     print("Missing values!")
-    print(missing_values_df.to_string())
+    print(missing_values_df)
 
-    return df
-
-
-def _impute_missing_values(df: pd.DataFrame) -> pd.DataFrame:
-    for column in df.select_dtypes(include=['float64', 'int64']).columns:
-        median_value = df[column].median()
-        df[column].fillna(median_value, inplace=True)
-
-    for column in df.select_dtypes(include=['object']).columns:
-        mode_value = df[column].mode()[0]
-        df[column].fillna(mode_value, inplace=True)
-
-    return df
+    return _impute_missing_values(df)
 
 
 def _process_duplicated_values(df: pd.DataFrame) -> pd.DataFrame:
     duplicated_df = df[df.duplicated()]
 
-    if (len(duplicated_df)) == 0:
+    if len(duplicated_df) == 0:
         return df
 
     print("Duplicated values!")
-    print(duplicated_df.to_string())
+    print(duplicated_df)
 
     return df.drop_duplicates()
 
 
+def _get_random_attribute(breed: str, attribute_type: str) -> list[str]:
+    assert attribute_type in ['color', 'pattern']
+
+    if attribute_type == 'color':
+        return random.choice(BREED_TO_COLOR_PATTERN.get(breed, ('Various', 'Various'))[0].split(', '))
+    elif attribute_type == 'pattern':
+        return random.choice(BREED_TO_COLOR_PATTERN.get(breed, ('Various', 'Various'))[1].split(', '))
+
+
 def _add_new_attributes(df: pd.DataFrame) -> pd.DataFrame:
-
-    def get_random_attribute(breed, attribute_type):
-        if attribute_type == 'color':
-            return random.choice(breed_color_pattern_updated.get(breed, ('Various', 'Various'))[0].split(', '))
-        elif attribute_type == 'pattern':
-            return random.choice(breed_color_pattern_updated.get(breed, ('Various', 'Various'))[1].split(', '))
-
-    breed_color_pattern_updated = {
-        'BEN': ('Brown, Silver, Snow', 'Spotted, Marbled'),
-        'SBI': ('Cream, Seal, Blue, Chocolate, Lilac', 'Colorpoint'),
-        'BRI': ('Blue, Black, White, Cream', 'Solid, Tabby, Bicolor'),
-        'CHA': ('Blue-gray', 'Solid'),
-        'EUR': ('Tabby, Black, White, Gray, Cream', 'Tabby, Solid, Bicolor'),
-        'MCO': ('Brown, Red, Cream, Blue', 'Tabby, Solid, Tortie, Bicolor'),
-        'PER': ('White, Black, Blue, Red, Cream, Tortoiseshell', 'Solid, Tabby, Shaded, Smoke, Tortie'),
-        'RAG': ('White, Seal, Blue, Chocolate, Lilac', 'Colorpoint, Mitted, Bicolor'),
-        'SPH': ('Brown, Silver, Black', 'Spotted, Marbled'),
-        'ORI': ('Black, White, Cream, Red, Blue, Tortie', 'Solid, Bicolor, Tortie'),
-        'TUV': ('White, Black, Blue, Red, Cream', 'Solid, Tabby, Bicolor'),
-        'Autre': ('Various', 'Various'),
-        'NSP': ('Various', 'Various')
-    }
-
-    df['Color'] = df['Race'].map(lambda breed: get_random_attribute(breed, 'color'))
-    df['Pattern'] = df['Race'].map(lambda breed: get_random_attribute(breed, 'pattern'))
+    df['Color'] = df['Race'].map(lambda breed: _get_random_attribute(breed, 'color'))
+    df['Pattern'] = df['Race'].map(lambda breed: _get_random_attribute(breed, 'pattern'))
 
     return df
 
@@ -77,7 +64,6 @@ def _add_new_attributes(df: pd.DataFrame) -> pd.DataFrame:
 def process_dataset(dataset_csv_path: str) -> pd.DataFrame:
     df = _read_dataset_to_df(dataset_csv_path)
     df = _process_missing_values(df)
-    df = _impute_missing_values(df)
     df = _add_new_attributes(df)
     df = _process_duplicated_values(df)
 
