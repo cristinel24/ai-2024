@@ -1,31 +1,27 @@
 from engine.constants import DATASET_PATH
+from engine.plots import (plot_boxplot_calm_timid_affective_df, plot_boxplot_loner_brutal_dominant_df,
+                          plot_behavioral_stats_df, plot_attributes_frequencies_dfs, plot_columns_correlation_df)
 from engine.processing import process_dataset
-from engine.statistics import instances_per_class, df_value_frequency, plot_attributes_frequencies, behavioral_stats
-from engine.plots import df_correlation
-from engine.utils import transform_non_numeric
 from pprint import pprint
-import matplotlib.pyplot as plt
+from engine.statistics import compute_instances_per_class_df, compute_value_frequency_stats
+from engine.utils import transform_non_numeric_attributes
 
 if __name__ == "__main__":
     df = process_dataset(DATASET_PATH)
 
-    print(instances_per_class(df))
-    print(df.to_string())
+    print(f"Instances per class:\n{compute_instances_per_class_df(df).to_string()}")
+    print(f"Processed dataset:\n{df}")
 
-    df.boxplot(by="Sexe", column=["Calme", "Timide", "Affectueux"], grid=False)
-    plt.savefig("plots/boxplot_sexe_calme_timide_affectueux.png")
-    df.boxplot(by="Sexe", column=["Solitaire", "Brutal", "Dominant"], grid=False)
-    plt.savefig("plots/boxplot_sexe_solitaire_brutal_dominant.png")
-    plt.show()
+    plot_boxplot_calm_timid_affective_df(df)
+    plot_boxplot_loner_brutal_dominant_df(df)
 
-    value_frequencies = df_value_frequency(df)
-    for attribute_name, attribute_frequencies in value_frequencies:
+    value_frequency_stats = compute_value_frequency_stats(df)
+    for attribute_name, attribute_frequencies in value_frequency_stats:
         print(f"Number of values for {attribute_name}: {len(attribute_frequencies)}")
         pprint(attribute_frequencies)
 
-    behavioral_stats(df)
+    plot_behavioral_stats_df(df)
+    plot_attributes_frequencies_dfs(df)
 
-    plot_attributes_frequencies(df, show=False)
-
-    transform_non_numeric(df)
-    df_correlation(df)
+    transform_non_numeric_attributes(df)
+    plot_columns_correlation_df(df)
