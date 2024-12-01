@@ -37,7 +37,7 @@ def behavioral_stats(df: pd.DataFrame):
     ax.set_frame_on(False)
 
     stats = ['Brutal', 'Dominant', 'Agressif', 'Impulsif', 'Prévisible', 'Distrait']
-    table_data = df[stats].describe().reset_index()
+    table_data = df[stats].describe()
 
     table = ax.table(cellText=table_data.values, colLabels=table_data.columns, cellLoc='center', loc='center')
 

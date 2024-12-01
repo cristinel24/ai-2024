@@ -1,10 +1,11 @@
 import random
+from sklearn.utils import resample
 import numpy as np
 import pandas as pd
 
 
 def _read_dataset_to_df(dataset_csv_path: str) -> pd.DataFrame:
-    return pd.read_csv(dataset_csv_path).drop(columns=["Row.names", "Plus"])
+    return pd.read_csv(dataset_csv_path).drop(columns=["Row.names", "Plus", "Horodateur"])
 
 
 def _process_missing_values(df: pd.DataFrame) -> pd.DataFrame:
@@ -74,11 +75,35 @@ def _add_new_attributes(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def _balance_dataset(df: pd.DataFrame, target_column: str) -> pd.DataFrame:
+    majority_class = df[target_column].value_counts().idxmax()
+    majority_count = df[target_column].value_counts().max()
+
+    df_majority = df[df[target_column] == majority_class]
+    resampled_dfs = [df_majority]
+
+    for class_label in df[target_column].unique():
+        if class_label != majority_class:
+            df_minority = df[df[target_column] == class_label]
+            df_upsampled = resample(
+                df_minority,
+                replace=True,
+                n_samples=majority_count,
+                random_state=42
+            )
+            resampled_dfs.append(df_upsampled)
+
+    balanced_df = pd.concat(resampled_dfs, axis=0).sample(frac=1, random_state=42).reset_index(drop=True)
+
+    return balanced_df
+
+
 def process_dataset(dataset_csv_path: str) -> pd.DataFrame:
     df = _read_dataset_to_df(dataset_csv_path)
     df = _process_missing_values(df)
     df = _impute_missing_values(df)
     df = _add_new_attributes(df)
     df = _process_duplicated_values(df)
+    df = _balance_dataset(df, "Race")
 
     return df
