@@ -4,12 +4,14 @@ from sklearn.model_selection import train_test_split
 import pandas as pd
 from sklearn.utils import shuffle
 from mlp.base import BaseModel
+import matplotlib.pyplot as plt
 
 
 class MLPModel(BaseModel):
-    offset = 15
-    reduce = 0.50
+    offset = 10
+    reduce = 0.5
     best_accuracy: int = 0
+    losses = []
 
     def __init__(self, df: pd.DataFrame, hidden_size: int = 100, learning_rate: float = 0.001, epochs: int = 500):
         target_column = 'Race'
@@ -38,6 +40,7 @@ class MLPModel(BaseModel):
         predictions = super()._softmax(out_layer)
         return hidden_layer_input, hidden_layer_output, predictions
 
+
     def _backward_propagation(self, data, labels, hidden_layer_input, hidden_layer_output, predictions):
         batch_size = data.shape[0]
 
@@ -59,19 +62,37 @@ class MLPModel(BaseModel):
         self.weights_output -= self.learning_rate * gradients_weights_hidden_output
         self.bias_output -= self.learning_rate * gradients_biases_output
 
-    def train(self, batch_size: int = 64):
+    def _show_loss_conv(self):
+        indices = range(len(self.losses))
+        plt.plot(indices, self.losses)
+
+        print(self.losses)
+
+        plt.xlabel("Epoch")
+        plt.ylabel("Cross Entropy Loss")
+
+        plt.show()
+
+    def train(self, batch_size: int = 100):
+        self.batch_size = 100
         counter = 0
 
         for epoch in range(self.epochs):
             self.train_data, self.train_labels = shuffle(self.train_data, self.train_labels)
 
+            epoch_loss = []
             for i in range(0, self.train_data.shape[0], batch_size):
                 data_batch = self.train_data[i:i + batch_size]
                 labels_batch = self.train_labels[i:i + batch_size]
 
                 hidden_layer_input, hidden_layer_output, output_predictions = self._forward_propagation(data_batch)
+                loss = super()._cross_entropy_loss(output_predictions, labels_batch)
+                epoch_loss.append(loss)
+
                 self._backward_propagation(data_batch, labels_batch, hidden_layer_input, hidden_layer_output,
                                            output_predictions)
+
+            self.losses.append(np.array(epoch_loss).mean())
 
             predictions = self._forward_propagation(self.test_data)[-1]
             accuracy = super()._accuracy(predictions, self.test_labels)
@@ -86,9 +107,12 @@ class MLPModel(BaseModel):
                     self.learning_rate *= self.reduce
                     print(f"Learning rate reduced to: {self.learning_rate}")
                     counter = 0
-                    if self.learning_rate < 1e-100:
+                    if self.learning_rate < 1e-3:
                         print(f"Learning rate too low. Stopping...")
                         break
 
         predictions = self._forward_propagation(self.test_data)[-1]
+
+        self._show_loss_conv()
+
         return super()._accuracy(predictions, self.test_labels)

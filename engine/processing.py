@@ -2,7 +2,8 @@ import random
 from sklearn.utils import resample
 import numpy as np
 import pandas as pd
-
+from imblearn.over_sampling import SMOTENC
+from sklearn.preprocessing import LabelEncoder
 
 def _read_dataset_to_df(dataset_csv_path: str) -> pd.DataFrame:
     return pd.read_csv(dataset_csv_path).drop(columns=["Row.names", "Plus", "Horodateur"])
@@ -75,6 +76,39 @@ def _add_new_attributes(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def _balance_dataset_smote(df: pd.DataFrame, target_column: str) -> pd.DataFrame:
+    x = df.drop(target_column, axis=1)
+    y = df[target_column]
+
+    categorical_features = x.select_dtypes(include=['object', 'category']).columns.tolist()
+    categorical_indices = [x.columns.get_loc(col) for col in categorical_features]
+
+    for col in categorical_features:
+        le = LabelEncoder()
+        x[col] = le.fit_transform(x[col])
+
+    if y.dtype == 'object' or str(y.dtype) == 'category':
+        y_le = LabelEncoder()
+        y = y_le.fit_transform(y)
+    else:
+        y_le = None
+
+    smote_nc = SMOTENC(categorical_features=categorical_indices, random_state=42)
+    x_resampled, y_resampled = smote_nc.fit_resample(x, y)
+
+    for col in categorical_features:
+        le = LabelEncoder()
+        le.fit(df[col])
+        x_resampled[col] = le.inverse_transform(x_resampled[col])
+
+    if y_le is not None:
+        y_resampled = y_le.inverse_transform(y_resampled)
+
+    resampled_df = pd.concat([pd.DataFrame(x_resampled, columns=x.columns), pd.Series(y_resampled, name=target_column)], axis=1)
+
+    return resampled_df
+
+
 def _balance_dataset(df: pd.DataFrame, target_column: str) -> pd.DataFrame:
     majority_class = df[target_column].value_counts().idxmax()
     majority_count = df[target_column].value_counts().max()
@@ -98,12 +132,15 @@ def _balance_dataset(df: pd.DataFrame, target_column: str) -> pd.DataFrame:
     return balanced_df
 
 
-def process_dataset(dataset_csv_path: str) -> pd.DataFrame:
+def process_dataset(dataset_csv_path: str, use_smote=False) -> pd.DataFrame:
     df = _read_dataset_to_df(dataset_csv_path)
     df = _process_missing_values(df)
     df = _impute_missing_values(df)
     df = _add_new_attributes(df)
     df = _process_duplicated_values(df)
-    df = _balance_dataset(df, "Race")
+    if use_smote:
+        df = _balance_dataset_smote(df, "Race")
+    else:
+        df = _balance_dataset(df, "Race")
 
     return df

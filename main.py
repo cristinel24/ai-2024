@@ -7,8 +7,9 @@ from pprint import pprint
 from mlp.model import MLPModel
 import matplotlib.pyplot as plt
 
+
 if __name__ == "__main__":
-    df = process_dataset(DATASET_PATH)
+    df = process_dataset(DATASET_PATH, use_smote=True)
     transform_non_numeric(df)
 
     print(instances_per_class(df))
@@ -33,6 +34,6 @@ if __name__ == "__main__":
     # transform_non_numeric(df)
     # df_correlation(df)
 
-    model = MLPModel(df, 100, 0.02, 200)
-    accuracy = model.train()
+    model = MLPModel(df, 100, 0.1, 200)
+    accuracy = model.train(50)
     print(f"Best accuracy: {model.best_accuracy * 100:.2f} ")
