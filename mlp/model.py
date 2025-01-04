@@ -1,3 +1,4 @@
+import pickle
 import numpy as np
 import time
 from sklearn.model_selection import train_test_split
@@ -27,7 +28,7 @@ class MLPModel(BaseModel):
         self.epochs = epochs
 
         np.random.seed(int(time.time()))
-        self.weights_hidden = np.random.randn(self.input_size, hidden_size) * np.sqrt(2. / self.input_size) # He initialization
+        self.weights_hidden = np.random.randn(self.input_size, hidden_size) * np.sqrt(2. / self.input_size)
         self.bias_hidden = np.zeros(hidden_size)
         self.weights_output = np.random.randn(hidden_size, self.output_size) * np.sqrt(2. / hidden_size)
         self.bias_output = np.zeros(self.output_size)
@@ -39,7 +40,6 @@ class MLPModel(BaseModel):
         out_layer = np.dot(hidden_layer_output, self.weights_output) + self.bias_output
         predictions = super()._softmax(out_layer)
         return hidden_layer_input, hidden_layer_output, predictions
-
 
     def _backward_propagation(self, data, labels, hidden_layer_input, hidden_layer_output, predictions):
         batch_size = data.shape[0]
@@ -73,8 +73,29 @@ class MLPModel(BaseModel):
 
         plt.show()
 
+    def save_model(self, filename='mlp_model.pkl'):
+        with open(filename, 'wb') as file:
+            pickle.dump({
+                'weights_hidden': self.weights_hidden,
+                'bias_hidden': self.bias_hidden,
+                'weights_output': self.weights_output,
+                'bias_output': self.bias_output,
+                'best_accuracy': self.best_accuracy
+            }, file)
+        print(f"Model saved to {filename}")
+
+    def load_model(self, filename='mlp_model.pkl'):
+        with open(filename, 'rb') as file:
+            model_data = pickle.load(file)
+            self.weights_hidden = model_data['weights_hidden']
+            self.bias_hidden = model_data['bias_hidden']
+            self.weights_output = model_data['weights_output']
+            self.bias_output = model_data['bias_output']
+            self.best_accuracy = model_data['best_accuracy']
+        print(f"Model loaded from {filename}")
+
     def train(self, batch_size: int = 100):
-        self.batch_size = 100
+        self.batch_size = batch_size
         counter = 0
 
         for epoch in range(self.epochs):
@@ -101,6 +122,7 @@ class MLPModel(BaseModel):
             if accuracy > self.best_accuracy:
                 self.best_accuracy = accuracy
                 counter = 0
+                self.save_model()
             else:
                 counter += 1
                 if counter == self.offset:

@@ -14,26 +14,31 @@ if __name__ == "__main__":
 
     print(instances_per_class(df))
 
-    # print(df.to_string())
-    #
-    # df.boxplot(by="Sexe", column=["Calme", "Timide", "Affectueux"], grid=False)
-    # plt.savefig("plots/boxplot_sexe_calme_timide_affectueux.png")
-    # df.boxplot(by="Sexe", column=["Solitaire", "Brutal", "Dominant"], grid=False)
-    # plt.savefig("plots/boxplot_sexe_solitaire_brutal_dominant.png")
-    # plt.show()
-    #
-    # value_frequencies = df_value_frequency(df)
-    # for attribute_name, attribute_frequencies in value_frequencies:
-    #     print(f"Number of values for {attribute_name}: {len(attribute_frequencies)}")
-    #     pprint(attribute_frequencies)
-    #
-    # behavioral_stats(df)
-    #
-    # plot_attributes_frequencies(df, show=False)
-    #
-    # transform_non_numeric(df)
-    # df_correlation(df)
+    print(df.to_string())
+
+    df.boxplot(by="Sexe", column=["Calme", "Timide", "Affectueux"], grid=False)
+    plt.savefig("plots/boxplot_sexe_calme_timide_affectueux.png")
+    df.boxplot(by="Sexe", column=["Solitaire", "Brutal", "Dominant"], grid=False)
+    plt.savefig("plots/boxplot_sexe_solitaire_brutal_dominant.png")
+    plt.show()
+
+    value_frequencies = df_value_frequency(df)
+    for attribute_name, attribute_frequencies in value_frequencies:
+        print(f"Number of values for {attribute_name}: {len(attribute_frequencies)}")
+        pprint(attribute_frequencies)
+
+    behavioral_stats(df)
+
+    plot_attributes_frequencies(df, show=False)
+
+    df_correlation(df)
 
     model = MLPModel(df, 100, 0.1, 200)
-    accuracy = model.train(50)
+    try:
+        model.load_model()
+    except Exception as e:
+        print(f"No pre-trained model! Error: {e}")
+        print("Training...")
+        model.train(50)
+
     print(f"Best accuracy: {model.best_accuracy * 100:.2f} ")

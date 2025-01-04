@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 def df_correlation(df: pd.DataFrame):
     plt.close()
-    columns = df.columns.drop('Horodateur')
+    columns = df.columns
     correlation_matrix = df[columns].corr()
 
     plt.figure(figsize=(12, 10))
