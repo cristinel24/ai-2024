@@ -143,4 +143,7 @@ def process_dataset(dataset_csv_path: str, use_smote=False) -> pd.DataFrame:
     else:
         df = _balance_dataset(df, "Race")
 
+    string_cols = df.select_dtypes(include='object').columns
+    df[string_cols] = df[string_cols].apply(lambda col: col.str.lower())
+
     return df

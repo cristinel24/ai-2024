@@ -4,3 +4,12 @@ scikit-learn==1.5.2
 matplotlib==3.9.2
 openpyxl
 imblearn
+langdetect
+nltk
+rake-nltk
+spacy
+word2number
+googletrans==4.0.0-rc1
+joblib
+openai
+python-dotenv
