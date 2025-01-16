@@ -6,7 +6,7 @@ from engine.utils import transform_non_numeric
 from pprint import pprint
 from mlp.model import MLPModel
 import matplotlib.pyplot as plt
-from engine.text_processing import read_text, translate_to_english, parse_english_sentence_to_cat_attributes, replace_words_with_variants, get_stylometry_info, extract_keywords, generate_sentences_for_keywords
+from engine.text_processing import read_text, translate_to_english, parse_english_sentence_to_cat_attributes, replace_words_with_variants, get_stylometry_info, extract_keywords, generate_sentences_for_keywords, describe_race
 import numpy as np
 
 
@@ -121,3 +121,5 @@ if __name__ == "__main__":
     predicted_race_label = race_encoder.inverse_transform([predicted_race_idx])[0]
 
     print(f"\nPREDICTED RACE for this cat: {predicted_race_label}")
+
+    print(f"Description of the race: {predicted_race_label}: {describe_race(predicted_race_label)}")

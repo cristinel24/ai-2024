@@ -364,6 +364,35 @@ def parse_english_sentence_to_cat_attributes(text: str,
     return cat_dict
 
 
+def describe_race(race: str):
+    messages = [
+        {
+            "role": "system",
+            "content": "You are a helpful assistant."
+        },
+        {
+            "role": "user",
+            "content": f"Generate one meaningful description of the cat race: {race}. "
+                       f"This is the legend: BEN/SBI/BRI/CHA/EUR/MCO/PER/RAG/SPH/ORI/TUV/ Autre/NSP = Bengal/ Birman/ British Shorthair/ Chartreux / European/ Maine coon / Persian/ Ragdoll/ Savannah / Sphynx/ Siamese/ Turkish angora / No breed / Other / Unknown "
+                       f"The text you generate MUST be in romanian. Return only the description and nothing else more"
+        }
+    ]
+
+    response = openai.ChatCompletion.create(
+        model="gpt-4o-mini",
+        messages=messages,
+        temperature=0.7,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0
+    )
+
+    sentences = []
+    for sentence in response.choices:
+        sentences.append(sentence.message["content"].strip())
+    return " ".join(sentences)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Test Romanian -> English NLP pipeline for cat attributes.")
     parser.add_argument("--textfile", help="Path to input Romanian text file", default=None)
