@@ -14,8 +14,6 @@ from word2number import w2n
 from googletrans import Translator
 import openai
 
-openai.api_key = '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'
-
 
 def load_label_encoders(encoders_path: str) -> dict:
     return joblib.load(encoders_path)
